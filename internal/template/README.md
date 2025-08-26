@@ -1,1 +1,0 @@
-# Catalyst Clean Architecture Template
