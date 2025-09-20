@@ -45,6 +45,15 @@ import (
 //	}
 //
 // Use `app.metrics.enabled` as the key to set a default value for the metrics enabled configuration.
+//
+// Validation can also be added to these structs in the `github.com/go-playground/validator/v10` format.
+// i.e.
+//
+//	 type RESTConfig struct {
+//	    Port int `mapstructure:"port" validate:"min=80,max=65535"`
+//		  Wait string `mapstructure:"wait" validate:"required"`
+//		  Release bool `mapstructure:"release"`
+//	 }
 func Parse(config any, s Settings) (any, error) {
 	// set config directory
 	dir := getConfigDir(s.Dir)
