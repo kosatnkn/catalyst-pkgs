@@ -79,6 +79,11 @@ func Parse(config any, s Settings) (any, error) {
 		return config, fmt.Errorf("config: unable to unmarshal, %w", err)
 	}
 
+	// validate unmarshaled struct
+	if err := validate(config); err != nil {
+		return config, fmt.Errorf("config: validation failed, %w", err)
+	}
+
 	return config, nil
 }
 
