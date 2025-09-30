@@ -10,7 +10,7 @@ import (
 	// database driver for postgres
 	_ "github.com/lib/pq"
 
-	"github.com/kosatnkn/catalyst/v3/persistence"
+	"github.com/kosatnkn/catalyst-pkgs/persistence"
 )
 
 // DatabaseAdapterPostgres is used to communicate with a Postgres database.

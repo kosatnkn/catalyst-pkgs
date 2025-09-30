@@ -1,4 +1,4 @@
-module github.com/kosatnkn/catalyst/v3
+module github.com/kosatnkn/catalyst-pkgs
 
 go 1.24.2
 

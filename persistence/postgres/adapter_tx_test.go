@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kosatnkn/catalyst/v3/persistence"
+	"github.com/kosatnkn/catalyst-pkgs/persistence"
 )
 
 // TestSingleTxSuccess tests for successful operation of executing multiple queries

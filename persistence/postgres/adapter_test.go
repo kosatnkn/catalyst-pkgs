@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kosatnkn/catalyst/v3/persistence"
-	"github.com/kosatnkn/catalyst/v3/persistence/postgres"
+	"github.com/kosatnkn/catalyst-pkgs/persistence"
+	"github.com/kosatnkn/catalyst-pkgs/persistence/postgres"
 )
 
 // NOTE: you will have to create a db named sample and in that a schema named sample and add the following table to it.
