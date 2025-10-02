@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/kosatnkn/catalyst/v3/telemetry/log"
+	"github.com/kosatnkn/catalyst-pkgs/telemetry/log"
 	"github.com/rs/zerolog"
 )
 
