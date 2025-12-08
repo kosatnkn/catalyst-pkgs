@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -80,7 +81,10 @@ func Parse(config any, s Settings) (any, error) {
 
 	// try to read the config file
 	if err := viper.ReadInConfig(); err != nil {
-		return config, fmt.Errorf("config: unable to read, %w", err)
+		var errNoCfgFile viper.ConfigFileNotFoundError
+		if !errors.As(err, &errNoCfgFile) {
+			return config, fmt.Errorf("config: unable to read config, %w", err)
+		}
 	}
 
 	// unmarshal into the struct
