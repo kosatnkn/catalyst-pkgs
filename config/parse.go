@@ -112,6 +112,12 @@ func getConfigDir(dir string) string {
 }
 
 // keysOfStruct traverses a struct and generates a slice of keys by concatenating 'mapstructure' tags with '.'
+//
+// The 'mapstructure' tag may carry options after the name (e.g. `name,omitempty`
+// or `,squash`):
+//   - a `-` name marks the field as ignored;
+//   - the `squash` option promotes a nested struct's fields to the current
+//     prefix instead of nesting them under a key of their own.
 func keysOfStruct(input any, prefix string) []string {
 	var keys []string
 
@@ -140,14 +146,48 @@ func keysOfStruct(input any, prefix string) []string {
 			continue
 		}
 
-		// generate the full key by combining the prefix with the current tag
-		fullKey := tag
+		// split the tag into its name and options (e.g. `name,squash`)
+		name, opts, _ := strings.Cut(tag, ",")
+
+		// a `-` name marks the field as ignored by mapstructure
+		if name == "-" {
+			continue
+		}
+
+		// detect the `squash` option
+		squash := false
+		for _, opt := range strings.Split(opts, ",") {
+			if opt == "squash" {
+				squash = true
+				break
+			}
+		}
+
+		isStruct := field.Type.Kind() == reflect.Struct ||
+			(field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct)
+
+		// a squashed struct contributes its fields directly to the current
+		// prefix, so it does not add a key segment of its own
+		if squash {
+			if isStruct {
+				keys = append(keys, keysOfStruct(value.Interface(), prefix)...)
+			}
+			continue
+		}
+
+		// a field carrying only options and no name has no key of its own
+		if name == "" {
+			continue
+		}
+
+		// generate the full key by combining the prefix with the field name
+		fullKey := name
 		if prefix != "" {
-			fullKey = prefix + "." + tag
+			fullKey = prefix + "." + name
 		}
 
 		// if the field is a struct, recursively traverse it
-		if field.Type.Kind() == reflect.Struct || (field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) {
+		if isStruct {
 			childKeys := keysOfStruct(value.Interface(), fullKey)
 			keys = append(keys, childKeys...)
 		} else {
