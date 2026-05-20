@@ -26,6 +26,10 @@ type Logger interface {
 	// AppendTracePoint appends the given trace point to a trace path in context that can be later read by the logger.
 	AppendTracePoint(ctx context.Context, point string) context.Context
 
+	LoggerBasic
+}
+
+type LoggerBasic interface {
 	// Error logs a message as of error type.
 	Error(ctx context.Context, message string)
 
