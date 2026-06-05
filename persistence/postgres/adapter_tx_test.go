@@ -94,7 +94,7 @@ func TestSingleTxFail(t *testing.T) {
 	}
 }
 
-// TestMultipleTxSuccess tests for successfull execution of multiple transactions.
+// TestMultipleTxSuccess tests for successful execution of multiple transactions.
 func TestMultipleTxSuccess(t *testing.T) {
 	clearTestTable(t)
 

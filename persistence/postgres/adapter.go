@@ -198,12 +198,12 @@ func (a *DatabaseAdapterPostgres) Destruct() error {
 
 // isSelect checks whether q is a select query.
 func (a *DatabaseAdapterPostgres) isSelect(q string) bool {
-	return strings.ToLower(q[:6]) == "select"
+	return strings.EqualFold(q[:6], "select")
 }
 
 // isInsert checks whether q is an insert query.
 func (a *DatabaseAdapterPostgres) isInsert(q string) bool {
-	return strings.ToLower(q[:6]) == "insert"
+	return strings.EqualFold(q[:6], "insert")
 }
 
 // attachTx attaches a database transaction to the context.
