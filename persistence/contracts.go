@@ -30,6 +30,9 @@ type DatabaseAdapter interface {
 	// WrapInTx runs the content of the function in a single transaction.
 	WrapInTx(ctx context.Context, fn func(ctx context.Context) (any, error)) (any, error)
 
+	// IsReadinessFail check for common readiness failure scenarios.
+	IsReadinessFail(err error) bool
+
 	// Destruct will close the database adapter releasing all resources.
 	Destruct() error
 }
