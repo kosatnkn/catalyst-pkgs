@@ -1,5 +1,9 @@
 package postgres
 
+// Identity provides a single reference point to be used
+// as an identifier for package resources.
+const Identity string = "postgres"
+
 // Config contains configuration parameters for Postgres.
 type Config struct {
 	Host     string `yaml:"host" mapstructure:"host"`

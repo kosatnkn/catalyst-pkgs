@@ -17,6 +17,7 @@ import (
 
 // DatabaseAdapterPostgres is used to communicate with a Postgres database.
 type DatabaseAdapterPostgres struct {
+	id       string
 	cfg      Config
 	pool     *sql.DB
 	pqPrefix string
@@ -38,6 +39,7 @@ func NewDatabaseAdapterPostgres(cfg Config) (persistence.DatabaseAdapter, error)
 	//db.SetConnMaxLifetime(time.Hour)
 
 	a := &DatabaseAdapterPostgres{
+		id:       Identity,
 		cfg:      cfg,
 		pool:     db,
 		pqPrefix: "?",
@@ -49,6 +51,11 @@ func NewDatabaseAdapterPostgres(cfg Config) (persistence.DatabaseAdapter, error)
 	}
 
 	return a, nil
+}
+
+// Identity returns an identifier for the adapter.
+func (a *DatabaseAdapterPostgres) Identity() string {
+	return a.id
 }
 
 // Ping checks wether the database is accessible.

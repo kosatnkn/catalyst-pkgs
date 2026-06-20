@@ -15,6 +15,9 @@ const (
 
 // DatabaseAdapter is implemented by all database adapters.
 type DatabaseAdapter interface {
+	// Identity returns an identifier for the adapter.
+	Identity() string
+
 	// Ping checks wether the database is accessible.
 	Ping() error
 
