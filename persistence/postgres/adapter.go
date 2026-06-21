@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	// database driver for postgres
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 
 	"github.com/kosatnkn/catalyst-pkgs/persistence"
@@ -17,10 +18,12 @@ import (
 
 // DatabaseAdapterPostgres is used to communicate with a Postgres database.
 type DatabaseAdapterPostgres struct {
-	id       string
-	cfg      Config
-	pool     *sql.DB
-	pqPrefix string
+	id           string
+	cfg          Config
+	pool         *sql.DB
+	paramPrefix  string
+	paramDivider string
+	paramExp     *regexp.Regexp
 }
 
 // NewDatabaseAdapterPostgres creates a new Postgres adapter instance.
@@ -39,10 +42,12 @@ func NewDatabaseAdapterPostgres(cfg Config) (persistence.DatabaseAdapter, error)
 	//db.SetConnMaxLifetime(time.Hour)
 
 	a := &DatabaseAdapterPostgres{
-		id:       Identity,
-		cfg:      cfg,
-		pool:     db,
-		pqPrefix: "?",
+		id:           Identity,
+		cfg:          cfg,
+		pool:         db,
+		paramPrefix:  namedParamPrefix,
+		paramDivider: namedParamDivider,
+		paramExp:     regexp.MustCompile(namedParamRegex),
 	}
 
 	// check whether the db is accessible
@@ -290,16 +295,14 @@ func (a *DatabaseAdapterPostgres) attachTx(ctx context.Context) (context.Context
 // in the query.
 func (a *DatabaseAdapterPostgres) convertQuery(query string) (string, []string) {
 	query = strings.TrimSpace(query)
-	exp := regexp.MustCompile(`\` + a.pqPrefix + `\w+`)
+	namedParams := a.paramExp.FindAllString(query, -1)
 
-	namedParams := exp.FindAllString(query, -1)
-
-	for i := 0; i < len(namedParams); i++ {
-		namedParams[i] = strings.TrimPrefix(namedParams[i], a.pqPrefix)
+	for i := range namedParams {
+		namedParams[i] = strings.TrimPrefix(namedParams[i], a.paramPrefix)
 	}
 
 	paramPosition := 0
-	query = string(exp.ReplaceAllFunc([]byte(query), func(param []byte) []byte {
+	query = string(a.paramExp.ReplaceAllFunc([]byte(query), func(param []byte) []byte {
 		paramPosition++
 		paramName := fmt.Sprintf("$%d", paramPosition)
 
@@ -320,10 +323,27 @@ func (a *DatabaseAdapterPostgres) reorderParameters(params map[string]any, named
 			return nil, fmt.Errorf("postgres-adapter: parameter '%s' is missing", param)
 		}
 
-		reorderedParams = append(reorderedParams, paramValue)
+		reorderedParams = append(reorderedParams, a.translateVal(param, paramValue))
 	}
 
 	return reorderedParams, nil
+}
+
+// translateVal to the requested form depending on the parameter suffix.
+// #arr - pq.Array()
+func (a *DatabaseAdapterPostgres) translateVal(param string, val any) any {
+	idx := strings.Index(param, a.paramDivider)
+	if idx == -1 {
+		return val
+	}
+	suffix := param[idx+1:]
+
+	switch suffix {
+	case "arr":
+		return pq.Array(val)
+	}
+
+	return val
 }
 
 // prepareStatement creates a prepared statement using the query.
@@ -407,7 +427,7 @@ func (a *DatabaseAdapterPostgres) prepareResultSet(result sql.Result) ([]map[str
 
 // formatResultSet creates a resultset using last insert id and affected rows.
 func (a *DatabaseAdapterPostgres) formatResultSet(id any, aff int64) []map[string]any {
-	data := make([]map[string]any, 0)
+	data := make([]map[string]any, 0, 2)
 
 	return append(data, map[string]any{
 		persistence.DatabaseAffectedRows: aff,
